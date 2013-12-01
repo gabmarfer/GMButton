@@ -15,7 +15,7 @@ Create a button in a XIB file, set its type to Custom and change its class to GM
 ```
 
 **Available colors**
-GMButtonColorBlue
-GMButtonColorGreen
-GMButtonColorGray
-GMButtonColorRed
++GMButtonColorBlue
++GMButtonColorGreen
++GMButtonColorGray
++GMButtonColorRed
