@@ -12,15 +12,25 @@
 
 #import <UIKit/UIKit.h>
 
+@interface UIColor (Additions)
+- (UIColor *)lighterColor;
+- (UIColor *)darkerColorWithPercentage:(CGFloat)percentage;
+@end
+
 typedef NS_ENUM(NSUInteger, GMButtonColor)
 {
-    GMButtonColorBlue,
+    GMButtonColorYellow,
     GMButtonColorGreen,
-    GMButtonColorRed,
-    GMButtonColorGray,
+    GMButtonColorBlack,
+    GMButtonColorWhite,
 };
 
 @interface GMButton : UIButton
 
 - (void)setButtonColor:(GMButtonColor)aColor;
+
+// Add and manage a Spinner if necessary
+- (void)addSpinner;
+- (void)startAnimating;
+- (void)stopAnimating;
 @end

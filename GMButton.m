@@ -10,10 +10,47 @@
 #import "GMButton.h"
 #import <QuartzCore/QuartzCore.h>
 
+@implementation UIColor (Additions)
+/**
+ * Modify the brightness of a color to make it lighter
+ *
+ * @param
+ * @return UIColor the modified color
+ */
+- (UIColor *)lighterColor
+{
+    CGFloat h, s, b, a;
+    if ([self getHue:&h saturation:&s brightness:&b alpha:&a])
+        return [UIColor colorWithHue:h
+                          saturation:s
+                          brightness:MIN(b * 1.3, 1.0)
+                               alpha:a];
+    return nil;
+}
+
+/**
+ * Modify the brightness of a color to make it darker
+ *
+ * @param percentage A CGFloat between 0.0 and 1.0 indicating how much darker should be
+ * @return UIColor the modified color
+ */
+- (UIColor *)darkerColorWithPercentage:(CGFloat)percentage
+{
+    CGFloat h, s, b, a;
+    if ([self getHue:&h saturation:&s brightness:&b alpha:&a])
+        return [UIColor colorWithHue:h
+                          saturation:s
+                          brightness:b * percentage
+                               alpha:a];
+    return nil;
+}
+@end
+
 @interface GMButton ()
 @property (nonatomic, strong) UIColor *normalColor;
 @property (nonatomic, strong) UIColor *highlightColor;
 @property (nonatomic, strong) UIColor *disabledColor;
+@property (nonatomic, strong) UIActivityIndicatorView *spinner;
 @end
 
 @implementation GMButton
@@ -23,27 +60,32 @@
     self = [super initWithFrame:frame];
     if (self) {
         // Initialization code
+        [self p_setupButton];
     }
     return self;
 }
 
 - (void)awakeFromNib
 {
-    // Round corners for iOS 6 buttons
-    CGFloat systemVersion = [[[UIDevice currentDevice] systemVersion] floatValue];
-    if (systemVersion < 7.0f)
-    {
-        [[self layer] setCornerRadius:8.0f];
-        [[self layer] setMasksToBounds:YES];
-    }
+    [self p_setupButton];
+}
+
+- (void)p_setupButton
+{
+    self.spinner = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhite];
+    [[self spinner] setHidesWhenStopped:YES];
+    
+    // Round corners
+    [[self layer] setCornerRadius:8.0f];
+    [[self layer] setMasksToBounds:YES];
     
     // Set a border
-    [[self layer] setBorderWidth:0.4f];
-    UIColor *borderColor = [UIColor colorWithRed:160/255.0f green:160/255.0f blue:160/255.0f alpha:1.0f]; /* #a0a0a0 */
-    [[self layer] setBorderColor:[borderColor CGColor]];
+    //[[self layer] setBorderWidth:0.4f];
+    //UIColor *borderColor = [UIColor colorWithRed:160/255.0f green:160/255.0f blue:160/255.0f alpha:1.0f]; /* #a0a0a0 */
+    //[[self layer] setBorderColor:[borderColor CGColor]];
     
     // Set a default color
-    [self setButtonColor:GMButtonColorBlue];
+    [self setButtonColor:GMButtonColorYellow];
 }
 
 /*
@@ -57,42 +99,54 @@
 
 - (void)setButtonColor:(GMButtonColor)aColor
 {
+    // Set base colors (normal state) and text colors
     switch (aColor) {
-        case GMButtonColorBlue:
+        case GMButtonColorYellow:
         {
-            self.normalColor = [UIColor colorWithRed:0/255.0f green:50/255.0f blue:136/255.0f alpha:1.0f]; /* #003288 */
-            self.highlightColor = [UIColor colorWithRed:0/255.0f green:36/255.0f blue:99/255.0f alpha:1.0f]; /* #002463 */
-            self.disabledColor = [UIColor colorWithRed:0/255.0f green:27/255.0f blue:73/255.0f alpha:1.0f];; /* 001b49 */
+            [self setNormalColor:[UIColor ownNormalYellowColor]];
+            [self setButtonTextColor:[UIColor ownDarkGreenColor]];
+            // Set highlighted and disabled colors
+            self.highlightColor = [[self normalColor] darkerColorWithPercentage:0.50];
+            self.disabledColor = [[self normalColor] darkerColorWithPercentage:0.75];
         }
             break;
         case GMButtonColorGreen:
         {
-            self.normalColor = [UIColor colorWithRed:13/255.0f green:178/255.0f blue:29/255.0f alpha:1.0f]; /* #0db21d */
-            self.highlightColor = [UIColor colorWithRed:9/255.0f green:134/255.0f blue:21/255.0f alpha:1.0f]; /* #098615 */
-            self.disabledColor = [UIColor colorWithRed:5/255.0f green:71/255.0f blue:11/255.0f alpha:1.0f]; /* #05470b */
+            [self setNormalColor:[UIColor ownDarkGreenColor]];
+            [self setButtonTextColor:[UIColor whiteColor]];
+            // Set highlighted and disabled colors
+            self.highlightColor = [[self normalColor] darkerColorWithPercentage:0.50];
+            self.disabledColor = [[self normalColor] darkerColorWithPercentage:0.75];
         }
             break;
-        case GMButtonColorGray:
+        case GMButtonColorBlack:
         {
-            self.normalColor = [UIColor colorWithRed:114/255.0f green:114/255.0f blue:114/255.0f alpha:1.0f]; /* #727272 */
-            self.highlightColor = [UIColor colorWithRed:83/255.0f green:83/255.0f blue:83/255.0f alpha:1.0f]; /* #535353 */
-            self.disabledColor = [UIColor colorWithRed:44/255.0f green:44/255.0f blue:44/255.0f alpha:1.0f]; /* #2c2c2c */
+            [self setNormalColor:[UIColor ownDarkGrayColor]];
+            [self setButtonTextColor:[UIColor ownNormalGrayColor]];
+            // Set highlighted and disabled colors
+            self.highlightColor = [UIColor blackColor];
+            self.disabledColor = [UIColor ownDisabledGrayColor];
         }
             break;
-        case GMButtonColorRed:
+        case GMButtonColorWhite:
         {
-            self.normalColor = [UIColor colorWithRed:238/255.0f green:15/255.0f blue:18/255.0f alpha:1.0f]; /* #ee0f12 */
-            self.highlightColor = [UIColor colorWithRed:165/255.0f green:8/255.0f blue:9/255.0f alpha:1.0f]; /* #a50809 */
-            self.disabledColor = [UIColor colorWithRed:172/255.0f green:8/255.0f blue:10/255.0f alpha:1.0f]; /* #ac080a */
+            self.normalColor = [UIColor whiteColor];
+            [self setButtonTextColor:[UIColor ownDarkGreenColor]];
+            // Set highlighted and disabled colors
+            self.highlightColor = [UIColor ownLightGrayColor];
+            self.disabledColor = [UIColor ownDisabledGrayColor];
         }
             break;
     }
-    
     [self setBackgroundColor:self.normalColor];
-    
-    [self setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
-    [self setTitleColor:[UIColor darkGrayColor] forState:UIControlStateHighlighted];
-    [self setTitleColor:[UIColor darkGrayColor] forState:UIControlStateSelected];
+}
+
+- (void)setButtonTextColor:(UIColor *)aColor
+{
+    // Set text colors
+    [self setTitleColor:aColor forState:UIControlStateNormal];
+    [self setTitleColor:aColor forState:UIControlStateHighlighted];
+    [self setTitleColor:aColor forState:UIControlStateSelected];
 }
 
 - (void)setHighlighted:(BOOL)highlighted
@@ -131,5 +185,51 @@
     
     [self setNeedsDisplay];
 }
+
+#pragma mark - Additional methods
+/**
+ * Add an UIActivityIndicatorView as a subview of the button. The spinner will be placed
+ * to the right of the title
+ *
+ * @param
+ * @return
+ */
+- (void)addSpinner
+{
+    [[self spinner] setColor:[UIColor ownDarkGrayColor]];
+    CGRect btnFrame = [self frame];
+    CGFloat marginRight = 30.0f;
+    CGFloat spinnerSize = 20.0f;
+    [[self spinner] setFrame:CGRectMake(btnFrame.size.width - marginRight - spinnerSize, 8.0f, spinnerSize, spinnerSize)];
+    [self addSubview:[self spinner]];
+}
+
+/**
+ * Start animating the spinner added as subview of the button
+ *
+ * @param
+ * @return
+ */
+- (void)startAnimating
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+            [[self spinner] startAnimating];
+    });
+}
+
+/**
+ * Stop animating the spinner added as subview of the button
+ *
+ * @param
+ * @return
+ */
+- (void)stopAnimating
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        if ([[self spinner] isAnimating])
+            [[self spinner] stopAnimating];
+    });
+}
+
 
 @end
